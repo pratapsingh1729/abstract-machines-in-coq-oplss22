@@ -15,7 +15,7 @@ with kont : Set :=
 | kStack : term -> kont -> kont
 | kCond : com -> com -> kont
 with com : Set :=
-| cCom : term -> kont -> com. 
+| cCom : term -> kont -> com.
 
 Inductive ty : Set :=
 | Tbool : ty
@@ -53,4 +53,16 @@ with com_typed : com -> ctxt -> coctxt -> Prop :=
     term_typed Γ v A Δ ->
     kont_typed Γ E A Δ ->
     com_typed (cCom v E) Γ Δ.
-               
+
+Notation "<[ G ⊢ V ; T | D ]>" := (term_typed G V T D) (at level 50).
+Notation "<| G | E ; T ⊢ D |>" := (kont_typed G E T D) (at level 50).
+Notation "<{ C ; ( G , D ) }>" := (com_typed C G D) (at level 50).
+
+Lemma true_admits_bool: forall Γ Δ,
+  <[ Γ ⊢ tT ; Tbool | Δ ]>.
+Proof. constructor. Qed.
+
+Lemma CoAx_holds : forall Γ α A Δ,
+  <| Γ | (kCovar α) ; A ⊢ (α, A) :: Δ |>.
+Proof. constructor. Qed.
+
