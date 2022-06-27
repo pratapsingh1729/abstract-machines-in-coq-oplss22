@@ -2,7 +2,9 @@ Require Import List.
 Import ListNotations.
 
 Definition var := nat.
+Definition eqb_var := Nat.eqb. 
 Definition covar := nat.
+Definition eqb_covar := Nat.eqb. 
 
 Inductive term : Set :=
 | tVar : var -> term
@@ -65,4 +67,26 @@ Proof. constructor. Qed.
 Lemma CoAx_holds : forall Γ α A Δ,
   <| Γ | (kCovar α) ; A ⊢ (α, A) :: Δ |>.
 Proof. constructor. Qed.
+
+Fail Fixpoint subst_var_term (x : var) (M : term) (N : term) : term :=
+  match N with
+  | tVar y => if eqb_var x y then M else N
+  | tT => tT
+  | tF => tF
+  | tLam y N' => if eqb_var x y then N else (tLam y (subst_var_term x M N'))
+  | tMu α c => tMu α (subst_var_com x M c)
+  end
+with subst_var_kont (x : var) (M : term) (E : kont) : kont :=
+  match E with
+  | kCovar α => E
+  | kStack N E' => kStack (subst_var_term x M N) (subst_var_kont x M E)
+  | kCond c1 c2 => kCond (subst_var_com x M c1) (subst_var_com x M c2)
+  end
+with subst_var_com (x : var) (M : term) (c : com) : com :=
+  match c with
+  | cCom N E => cCom (subst_var_term x M N) (subst_var_kont x M E)
+  end.
+(* Coq cannot guess the decreasing argument *)    
+
+
 
