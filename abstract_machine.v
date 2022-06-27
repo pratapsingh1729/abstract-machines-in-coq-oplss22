@@ -68,7 +68,7 @@ Lemma CoAx_holds : forall Γ α A Δ,
   <| Γ | (kCovar α) ; A ⊢ (α, A) :: Δ |>.
 Proof. constructor. Qed.
 
-Fail Fixpoint subst_var_term (x : var) (M : term) (N : term) : term :=
+Fixpoint subst_var_term (x : var) (M : term) (N : term) : term :=
   match N with
   | tVar y => if eqb_var x y then M else N
   | tT => tT
@@ -79,7 +79,7 @@ Fail Fixpoint subst_var_term (x : var) (M : term) (N : term) : term :=
 with subst_var_kont (x : var) (M : term) (E : kont) : kont :=
   match E with
   | kCovar α => E
-  | kStack N E' => kStack (subst_var_term x M N) (subst_var_kont x M E)
+  | kStack N E' => kStack (subst_var_term x M N) (subst_var_kont x M E')
   | kCond c1 c2 => kCond (subst_var_com x M c1) (subst_var_com x M c2)
   end
 with subst_var_com (x : var) (M : term) (c : com) : com :=
