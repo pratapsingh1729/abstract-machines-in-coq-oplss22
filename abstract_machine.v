@@ -58,7 +58,7 @@ with com_typed : com -> ctxt -> coctxt -> Prop :=
 
 Notation "<[ G ⊢ V ; T | D ]>" := (term_typed G V T D) (at level 50).
 Notation "<| G | E ; T ⊢ D |>" := (kont_typed G E T D) (at level 50).
-Notation "<{ C ; ( G , D ) }>" := (com_typed C G D) (at level 50).
+Notation "<{ C ; ( G ⊢ D ) }>" := (com_typed C G D) (at level 50).
 
 Lemma true_admits_bool: forall Γ Δ,
   <[ Γ ⊢ tT ; Tbool | Δ ]>.
@@ -86,7 +86,30 @@ with subst_var_com (x : var) (M : term) (c : com) : com :=
   match c with
   | cCom N E => cCom (subst_var_term x M N) (subst_var_kont x M E)
   end.
-(* Coq cannot guess the decreasing argument *)    
 
+Notation "M ~ [ X ;= N ]" := (subst_var_term X M N) (at level 50).
 
+Inductive final : com -> Prop :=
+  | f_True : forall α,
+      final (cCom tT (kCovar α))
+  | f_False : forall α,
+      final (cCom tF (kCovar α)).
+
+Reserved Notation "t '→' t'" (at level 40).
+
+Inductive step : com -> com -> Prop :=
+  | step_True : forall c1 c2,
+      step (cCom tT (kCond c1 c2)) c1
+  | step_False : forall c1 c2,
+      step (cCom tF (kCond c1 c2)) c2
+  | step_Lam : forall x M N E,
+      step (cCom (tLam x M) (kStack N E))
+           (cCom ( M~[x;=N] ) E)
+  (* ... *)
+ where "t '→' t'" := (step t t').
+
+Lemma progress : forall c α,
+  <{ c ; ( [] ⊢ (α, Tbool) :: []) }> ->
+  final c \/ exists c', c → c'.
+Admitted.
 
